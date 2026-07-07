@@ -19,11 +19,12 @@ void help() {
   printf("------------- Board commands -------------\n");
   printf("------------------------------------------\n");
   printf("All subboard commands can be given the -i flag to be used with ids instead of names\n");
+  printf("Use -p to specify a path\n");
   printf("ls [list, path] : lists all the boards in a specified list from the cloned workspace, if the list is not specified then it lists all the lists of the cloned workspace\n");
-  printf("check [list, card, path] : checks the specified card from the cloned workspace, will fail if the card is aldready checked unless the -f flag is used\n");
-  printf("uncheck [list, card, path] : check but reversed\n");
-  printf("togle [list, card, path] : togles the card's state\n");
-  printf("archive [list, card, path] : archives a card / list if not cards given\n");
-  printf("push [path] : pushes changes to trello\n");
-  printf("pull [path] : pulls changes from trello\n");
+  printf("check [list, card] : checks the specified card from the cloned workspace, will fail if the card is aldready checked unless the -f flag is used\n");
+  printf("uncheck [list, card] : check but reversed\n");
+  printf("togle [list, card] : togles the card's state\n");
+  printf("archive [list, card] : archives a card / list if not cards given\n");
+  printf("push : pushes changes to trello\n");
+  printf("pull : pulls changes from trello\n");
 }

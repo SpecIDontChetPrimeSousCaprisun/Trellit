@@ -6,60 +6,14 @@
 #include <dirent.h>
 #include <stdlib.h>
 
-static int listCards(char *list, bool id) {
-  size_t size = strlen(list) + strlen(".trellit/board/") + 1;
-  char *path = malloc(size);
-  snprintf(path, size, ".trellit/board/%s", list);
-
-  DIR *dir = opendir(path);
-  if (dir == NULL) {
-    perror("opendir");
-    return 1;
-  }
-
-  struct dirent *entry;
-  while ((entry = readdir(dir)) != NULL) {
-    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
-    
-    size_t fullSize = strlen("/") + strlen(entry->d_name) + strlen(path) + 1;
-    char* fullPath = malloc(fullSize);
-    snprintf(fullPath, fullSize, "%s/%s", path, entry->d_name);
-
-    FILE* f = fopen(fullPath, "r");
-    if (f == NULL) {
-        perror("fopen");
-        continue;
-    }
-
-    char *value = "";
-    char line[256];
-
-    while (fgets(line, sizeof(line), f) != NULL) {
-      line[strcspn(line, "\n")] = '\0';
-      char lKey[128], lValue[128];
-      if (sscanf(line, "%127[^=]=%127[^\n]", lKey, lValue) == 2) {
-        if (strcmp(lKey, "id") == 0) value = strdup(lValue);
-      }
-    }
-
-    printf("%s (%s) CARD\n", entry->d_name, value);
-
-    free(fullPath);
-  }
-
-  closedir(dir);
-  free(path);
-  return 0;
-}
-
-static int listLists(bool recursive) {
+static char *getListFromId(char *id) {
   DIR *dir = opendir(".trellit/board");
   if (dir == NULL) {
     perror("opendir");
-    return 1;
+    return "";
   }
 
-  bool first = true;
+  char *name = NULL;
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
     if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
@@ -74,7 +28,7 @@ static int listLists(bool recursive) {
         continue;
     }
 
-    char *value = "";
+    char *value = NULL;
     char line[256];
 
     while (fgets(line, sizeof(line), f) != NULL) {
@@ -85,37 +39,138 @@ static int listLists(bool recursive) {
       }
     }
 
-    size_t printSize = strlen(value) + strlen(entry->d_name) + strlen(" () LIST");
+    if (value != NULL && strcmp(value, id) == 0) {
+      name = strdup(entry->d_name);
+      free(value);
+      break;
+    }
+    free(value);
+    fclose(f);
+    free(path);
+  }
 
-    if (recursive && first) {
-      for (int i = 0; i < printSize; i++) {
-        printf("=");
-      }
+  closedir(dir);
+  return name;
+}
 
-      printf("\n");
-      first = false;
+static int listCards(Flags flags) {
+  char *listId = flags.argv[2];
+  bool id = flags.id;
+
+  char *list = NULL;
+
+  if (id) list = getListFromId(listId);
+  else if (flags.recursive) list = strdup(flags.currentList);
+  else list = strdup(listId);
+
+  char* basePath;
+  
+  if (flags.hasPath) basePath = strdup(flags.path);
+  else basePath = strdup(".trellit/board");
+
+  size_t size = strlen(list) + strlen(basePath) + strlen("/") + 1;
+  char *path = malloc(size);
+  snprintf(path, size, "%s/%s", basePath, list);
+
+  DIR *dir = opendir(path);
+  if (dir == NULL) {
+    perror("opendir");
+    return 1;
+  }
+
+  struct dirent *entry;
+  while ((entry = readdir(dir)) != NULL) {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || strcmp(entry->d_name, "info") == 0) continue;
+    
+    size_t fullSize = strlen("/") + strlen(entry->d_name) + strlen(path) + 1;
+    char* fullPath = malloc(fullSize);
+    snprintf(fullPath, fullSize, "%s/%s", path, entry->d_name);
+
+    FILE* f = fopen(fullPath, "r");
+    if (f == NULL) {
+        perror("fopen");
+        continue;
     }
 
-    printf("%s (%s) LIST\n", entry->d_name, value);
+    char *value = NULL;
+    char line[256];
 
-    free(path);
-
-    if (recursive) {
-      for (int i = 0; i < printSize; i++) {
-        printf("-");
+    while (fgets(line, sizeof(line), f) != NULL) {
+      line[strcspn(line, "\n")] = '\0';
+      char lKey[128], lValue[128];
+      if (sscanf(line, "%127[^=]=%127[^\n]", lKey, lValue) == 2) {
+        if (strcmp(lKey, "id") == 0) value = strdup(lValue);
       }
+    }
 
-      printf("\n");
-      listCards(entry->d_name, false);
-      for (int i = 0; i < printSize; i++) {
-        printf("=");
+    if (flags.recursive) printf("   %s (%s)\n", entry->d_name, value);
+    else printf("%s (%s)\n", entry->d_name, value);
+
+    free(fullPath);
+    free(value);
+    fclose(f);
+  }
+
+  closedir(dir);
+  free(path);
+  free(list);
+  return 0;
+}
+
+static int listLists(Flags flags) {
+  char* path;
+  
+  if (flags.hasPath) path = strdup(flags.path);
+  else path = strdup(".trellit/board");
+
+  DIR *dir = opendir(path);
+
+  if (dir == NULL) {
+    perror("opendir");
+    return 1;
+  }
+
+  struct dirent *entry;
+  while ((entry = readdir(dir)) != NULL) {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+    
+    size_t size = strlen(path) + strlen("//info") + strlen(entry->d_name) + 1;
+    char* listPath = malloc(size);
+    snprintf(listPath, size, "%s/%s/info", path, entry->d_name);
+
+    FILE* f = fopen(listPath, "r");
+    if (f == NULL) {
+        perror("fopen");
+        continue;
+    }
+
+    char *value = NULL;
+    char line[256];
+
+    while (fgets(line, sizeof(line), f) != NULL) {
+      line[strcspn(line, "\n")] = '\0';
+      char lKey[128], lValue[128];
+      if (sscanf(line, "%127[^=]=%127[^\n]", lKey, lValue) == 2) {
+        if (strcmp(lKey, "id") == 0) value = strdup(lValue);
       }
+    }
 
+    printf("%s (%s)\n", entry->d_name, value);
+
+    free(listPath);
+    free(value);
+    fclose(f);
+
+    if (flags.recursive) {
+      Flags newFlags = flags;
+      newFlags.currentList = entry->d_name;
+      listCards(newFlags);
       printf("\n");
     }
   }
 
   closedir(dir);
+  free(path);
   return 0;
 }
 
@@ -128,8 +183,8 @@ int ls(int argc, char *argv[]) {
     return 1;
   }
   
-  if (flags.argc == 2) return listLists(flags.recursive);
-  else return listCards(argv[2], flags.id);
+  if (flags.argc == 2) return listLists(flags);
+  else return listCards(flags);
 
   return 0;
 }
