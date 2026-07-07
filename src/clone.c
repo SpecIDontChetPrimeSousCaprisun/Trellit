@@ -145,6 +145,7 @@ void cloneCards(char *path, char *id) {
       else if (cJSON_IsNumber(item)) fprintf(f, "%s=%f\n", item->string, item->valuedouble);
       else if (cJSON_IsBool(item)) fprintf(f, "%s=%s\n", item->string, cJSON_IsTrue(item) ? "true" : "false");
     }
+    fprintf(f, "order=%d", i);
     fclose(f);
     free(filePath);
   }

@@ -78,7 +78,20 @@ static int listCards(Flags flags) {
     return 1;
   }
 
+  // Pass 1: count real entries (skip . and ..)
+  int count = 0;
   struct dirent *entry;
+  while ((entry = readdir(dir)) != NULL) {
+      if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+      count++;
+  }
+
+  // Rewind to the start of the directory stream to read it again
+  rewinddir(dir);
+
+  // Now we know exactly how many slots we need
+  char **cards = malloc(count * sizeof(char *));
+
   while ((entry = readdir(dir)) != NULL) {
     if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || strcmp(entry->d_name, "info") == 0) continue;
     
@@ -93,6 +106,7 @@ static int listCards(Flags flags) {
     }
 
     char *value = NULL;
+    int order = 0;
     char line[256];
 
     while (fgets(line, sizeof(line), f) != NULL) {
@@ -100,15 +114,32 @@ static int listCards(Flags flags) {
       char lKey[128], lValue[128];
       if (sscanf(line, "%127[^=]=%127[^\n]", lKey, lValue) == 2) {
         if (strcmp(lKey, "id") == 0) value = strdup(lValue);
+        else if (strcmp(lKey, "order") == 0) order = atoi(lValue);
       }
     }
 
-    if (flags.recursive) printf("   %s (%s)\n", entry->d_name, value);
-    else printf("%s (%s)\n", entry->d_name, value);
+    char *card;
+
+    if (flags.recursive) {
+      size_t cardSize = strlen("    ()\n") + strlen(entry->d_name) + strlen(value) + 1;
+      card = malloc(cardSize);
+      snprintf(card, cardSize, "   %s (%s)\n", entry->d_name, value);
+    } else {
+      size_t cardSize = strlen(" ()\n") + strlen(entry->d_name) + strlen(value) + 1;
+      card = malloc(cardSize);
+      snprintf(card, cardSize, "%s (%s)\n", entry->d_name, value);
+    }
+
+    cards[order] = card;
 
     free(fullPath);
     free(value);
     fclose(f);
+  }
+
+  for (int i = 0; i < count; i++) {
+    printf(cards[i]);
+    free(cards[i]);
   }
 
   closedir(dir);
