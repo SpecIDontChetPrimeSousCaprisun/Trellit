@@ -1,0 +1,44 @@
+id=6a3d92b0e8f33396bc908549
+closed=false
+dueComplete=true
+dateLastActivity=2026-07-03T08:05:22.141Z
+desc=idée de text :
+
+[ critical ] Subject stopped responding
+
+[ failed ] Running inconcious test…
+
+[ failed ] Getting heart state…
+
+[ ok ] Getting brain state…
+
+[ warning ] No brain blood supply…
+
+[ failed ] Running defibrilator…
+
+[ failed ] Trying emergency supply…
+
+[ failed ] Trying last medical resort…
+
+(ascii art ?)
+
+You were our only hope…
+
+It’s not your fault it’s their’s
+
+Vengance is soon to come
+
+[ ok ] Initiating self destruction….
+idBoard=6a3d71c50dc90b7f351ff707
+idList=6a3d71e573024bc5f164e5d5
+idShort=31.000000
+manualCoverAttachment=false
+name=écran de mort
+nodeId=ari:cloud:trello::card/workspace/67e4e6c3c3aa3567b00d4ddb/6a3d92b0e8f33396bc908549
+pinned=false
+pos=140737488543744.000000
+shortLink=bFJdGCBN
+shortUrl=https://trello.com/c/bFJdGCBN
+subscribed=false
+url=https://trello.com/c/bFJdGCBN/31-%C3%A9cran-de-mort
+isTemplate=false

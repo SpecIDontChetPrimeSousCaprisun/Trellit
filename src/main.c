@@ -7,6 +7,7 @@
 #include "config.h"
 #include "list.h"
 #include "clone.h"
+#include "ls.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -22,6 +23,7 @@ int main(int argc, char *argv[]) {
   else if (strcmp(argv[1], "config") == 0) returnVal = config(argc, argv);
   else if (strcmp(argv[1], "list") == 0) returnVal = listsubcmd();
   else if (strcmp(argv[1], "clone") == 0) returnVal = clone(argc, argv);
+  else if (strcmp(argv[1], "ls") == 0) returnVal = ls(argc, argv);
   else help();
 
   curl_global_cleanup();

@@ -12,6 +12,7 @@
 #include "init.h"
 #include "config.h"
 #include "trello.h"
+#include "helper.h"
 
 static int checkForExistentFiles(char *path) {
   if (access(path, F_OK) == 0) {
@@ -151,33 +152,8 @@ void cloneCards(char *path, char *id) {
   cJSON_Delete(root);
 }
 
-typedef struct {
-  bool id;
-  char **argv;
-  int argc;
-} CloneFlags;
-
-static CloneFlags parseFlags(int argc, char *argv[]) {
-  CloneFlags flags;
-  flags.id = false;
-  flags.argv = malloc(argc * sizeof(char *));
-  flags.argc = 0;
-
-  for (int i = 0; i < argc; i++) {
-    char *arg = argv[i];
-    if (strcmp(arg, "--id") == 0 || strcmp(arg, "-i") == 0 || strcmp(arg, "--identifier") == 0) {
-      flags.id = true;
-    } else {
-      flags.argv[flags.argc] = arg;
-      flags.argc++;
-    }
-  }
-
-  return flags;
-}
-
 int clone(int argc, char *argv[]) {
-  CloneFlags flags = parseFlags(argc, argv);
+  Flags flags = parseFlags(argc, argv);
   BoardInfo *info;
 
   if (flags.argc < 4 || flags.argc > 5) {

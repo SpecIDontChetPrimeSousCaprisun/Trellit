@@ -8,7 +8,9 @@ SRCS = src/main.c \
 			 src/config.c \
 			 src/list.c \
 			 src/clone.c \
-			 src/trello.c
+			 src/trello.c \
+			 src/helper.c \
+			 src/ls.c
 OBJS = $(patsubst src/%.c, build/%.o, $(SRCS))
 
 test: $(OBJS)
