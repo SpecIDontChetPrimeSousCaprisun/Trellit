@@ -8,6 +8,8 @@
 #include "list.h"
 #include "clone.h"
 #include "ls.h"
+#include "check.h"
+#include "push.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -24,6 +26,8 @@ int main(int argc, char *argv[]) {
   else if (strcmp(argv[1], "list") == 0) returnVal = listsubcmd();
   else if (strcmp(argv[1], "clone") == 0) returnVal = clone(argc, argv);
   else if (strcmp(argv[1], "ls") == 0) returnVal = ls(argc, argv);
+  else if (strcmp(argv[1], "check") == 0) returnVal = check(argc, argv);
+  else if (strcmp(argv[1], "push") == 0) returnVal = push(argc, argv);
   else help();
 
   curl_global_cleanup();

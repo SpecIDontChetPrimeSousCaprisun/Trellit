@@ -189,7 +189,19 @@ int clone(int argc, char *argv[]) {
 
   if (lists == NULL) return 1; 
 
+  size_t boardInfoSize = strlen(path) + strlen("/info") + 1;
+  char *boardInfoPath = malloc(boardInfoSize);
+  snprintf(boardInfoPath, boardInfoSize, "%s/info", path);
+
   mkdir(path, 0755);
+  FILE *boardInfoF = fopen(boardInfoPath, "w");
+  if (boardInfoF == NULL) {
+    perror("fopen");
+    return 1;
+  }
+
+  fprintf(boardInfoF, "id=%s\n", info->boardId);
+  fclose(boardInfoF);
 
   cJSON *root = cJSON_Parse(lists);
 
@@ -228,6 +240,7 @@ int clone(int argc, char *argv[]) {
   cJSON_Delete(root);
 
   free(info);
+  free(boardInfoPath);
 
   return 0;
 }

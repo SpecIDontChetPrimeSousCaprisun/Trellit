@@ -15,5 +15,7 @@ char *trello_get_workspaces();
 char *trello_get_boards(char *workspaceId);
 char *trello_get_lists(char *id);
 char *trello_get_cards_from_list(char *id);
+char *trello_create_list(char *listName, char *boardPath);
+char *trello_update_card(char *cardPath);
 
 #endif

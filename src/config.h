@@ -10,6 +10,7 @@ typedef struct {
 } AuthInfo;
 
 AuthInfo *getAuthInfo();
+char *getId(char *path);
 int config(int argc, char *argv[]);
 
 #endif

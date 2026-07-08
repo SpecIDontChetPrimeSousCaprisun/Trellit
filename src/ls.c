@@ -106,6 +106,7 @@ static int listCards(Flags flags) {
     }
 
     char *value = NULL;
+    bool checked = false;
     int order = 0;
     char line[256];
 
@@ -115,19 +116,21 @@ static int listCards(Flags flags) {
       if (sscanf(line, "%127[^=]=%127[^\n]", lKey, lValue) == 2) {
         if (strcmp(lKey, "id") == 0) value = strdup(lValue);
         else if (strcmp(lKey, "order") == 0) order = atoi(lValue);
+        else if (strcmp(lKey, "dueComplete") == 0) checked = strcmp(lValue, "true") == 0;
       }
     }
 
+    char *color = checked ? "\033[32m" : "\033[0m";
     char *card;
 
     if (flags.recursive) {
-      size_t cardSize = strlen("    ()\n") + strlen(entry->d_name) + strlen(value) + 1;
+      size_t cardSize = strlen("    ()\033[0m\n") + strlen(entry->d_name) + strlen(value) + strlen(color) + 1;
       card = malloc(cardSize);
-      snprintf(card, cardSize, "   %s (%s)\n", entry->d_name, value);
+      snprintf(card, cardSize, "%s   %s (%s)\033[0m\n", color, entry->d_name, value);
     } else {
-      size_t cardSize = strlen(" ()\n") + strlen(entry->d_name) + strlen(value) + 1;
+      size_t cardSize = strlen(" ()\033[0m\n") + strlen(entry->d_name) + strlen(value) + strlen(color) + 1;
       card = malloc(cardSize);
-      snprintf(card, cardSize, "%s (%s)\n", entry->d_name, value);
+      snprintf(card, cardSize, "%s%s (%s)\033[0m\n", color, entry->d_name, value);
     }
 
     cards[order] = card;

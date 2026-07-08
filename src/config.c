@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "config.h"
+#include "helper.h"
 
 static char *getTarget(char *level) {
   const char *home = getenv("HOME");
@@ -51,47 +52,6 @@ static char *getConfigValue(char *level, char *key) {
 
   free(target);
   return value;
-}
-
-int overwrite_line(const char *path, const char *old_line, const char *new_line) {
-  FILE *in = fopen(path, "r");
-  if (in == NULL) {
-      perror("fopen");
-      return 1;
-  }
-
-  char tmp_path[512];
-  snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", path);
-
-  FILE *out = fopen(tmp_path, "w");
-  if (out == NULL) {
-      perror("fopen");
-      fclose(in);
-      return 1;
-  }
-
-  char line[256];
-  while (fgets(line, sizeof(line), in) != NULL) {
-      char trimmed[256];
-      strcpy(trimmed, line);
-      trimmed[strcspn(trimmed, "\n")] = '\0';  // strip newline for comparison
-
-      if (strcmp(trimmed, old_line) == 0) {
-          fprintf(out, "%s\n", new_line);  // write the replacement
-      } else {
-          fputs(line, out);  // keep original line (with its own \n) unchanged
-      }
-  }
-
-  fclose(in);
-  fclose(out);
-
-  if (rename(tmp_path, path) != 0) {
-      perror("rename");
-      return 1;
-  }
-
-  return 0;
 }
 
 int config(int argc, char *argv[]) {
@@ -151,4 +111,31 @@ AuthInfo *getAuthInfo() {
   info->token = token;
 
   return info;
+}
+
+char *getId(char *path) {
+  size_t size = strlen(path) + strlen("/info") + 1;
+  char *infoPath = malloc(size);
+  snprintf(infoPath, size, "%s/info", path);
+
+  FILE *f = fopen(infoPath, "r");
+  if (f == NULL) {
+    perror("fopen");
+    return "";
+  }
+
+  char *value = NULL;
+  char line[256];
+
+  while (fgets(line, sizeof(line), f) != NULL) {
+    line[strcspn(line, "\n")] = '\0';
+    char lKey[128], lValue[128];
+    if (sscanf(line, "%127[^=]=%127[^\n]", lKey, lValue) == 2) {
+      if (strcmp(lKey, "id") == 0) value = strdup(lValue);
+    }
+  }
+
+  fclose(f);
+
+  return value;
 }

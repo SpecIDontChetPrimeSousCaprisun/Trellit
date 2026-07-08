@@ -11,6 +11,7 @@ typedef struct {
   int argc;
 } Flags;
 
+int overwrite_line(const char *path, const char *old_line, const char *new_line);
 Flags parseFlags(int argc, char *argv[]);
 
 #endif
